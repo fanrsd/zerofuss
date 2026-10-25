@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Entitlement Zerofuss di macOS. Satu baris, dan baris itu wajib.
+
+  Hardened Runtime memblokir akses perangkat USB kecuali entitlement ini ada.
+  Tanpa dia, biner yang ditandatangani + dinotarisasi akan gagal membuka
+  interface goggles FPV V1/V2 - dan gejalanya menyesatkan, karena `nusb`
+  melaporkannya sebagai galat izin biasa, seolah ada program lain yang
+  memegang interface itu. Build lokal tanpa tanda tangan tidak menunjukkan
+  masalah ini sama sekali, jadi ia hanya muncul di build rilis.
+
+  Aplikasinya TIDAK di-sandbox (tidak ada com.apple.security.app-sandbox),
+  jadi entitlement jaringan tidak diperlukan: server frame lokal dan soket UDP
+  bebas dipakai. Jangan menambah entitlement lain "supaya aman" - setiap
+  tambahan memperlebar apa yang biner ini boleh lakukan.
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.device.usb</key>
+	<true/>
+</dict>
+</plist>

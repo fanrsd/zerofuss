@@ -1,0 +1,34 @@
+# Skrip yang dijalankan di macOS WAJIB berakhiran LF.
+#
+# Ini bukan kosmetik: `sh bangun-mac.sh` dengan akhiran CRLF gagal di Mac
+# dengan pesan yang menyesatkan ("bad interpreter", "command not found" untuk
+# perintah yang jelas ada), karena `\r` ikut terbaca sebagai bagian nama
+# perintah. Mesin pengembangnya Windows dengan core.autocrlf menyala, jadi
+# tanpa aturan ini setiap kloning ke Mac membawa masalah itu.
+*.sh text eol=lf
+*.rb text eol=lf
+*.yaml text eol=lf
+*.plist text eol=lf
+
+# Sumber dan konfigurasi: normalkan di riwayat, biarkan checkout mengikuti OS.
+*.rs text
+*.js text
+*.json text
+*.toml text
+*.html text
+*.css text
+*.md text
+*.txt text
+*.py text
+
+# Skrip Windows sebaliknya: CRLF, karena cmd.exe memang mengharapkannya.
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Biner: jangan pernah disentuh.
+*.png binary
+*.webp binary
+*.icns binary
+*.ico binary
+*.pdf binary
+*.h264 binary

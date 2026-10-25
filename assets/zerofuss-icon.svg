@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Latar gelap wajib: tanda putih transparan hilang di Explorer bertema terang. -->
+  <rect width="1024" height="1024" rx="225" fill="#0f1113"/>
+  <!-- Tanda yang sama dipakai bar aplikasi. Geometrinya tebal, jadi bertahan
+       saat diperkecil ke 16 px - berbeda dari glyph line-art di lockup, yang
+       terukur jadi noda di bawah 32 px. -->
+  <g transform="translate(194.5 300.5) scale(13.23)" fill="none" stroke="#ffffff">
+    <path d="M8 7h18a7 7 0 0 1 7 7v4a7 7 0 0 1-7 7H8a5 5 0 0 1-5-5v-8a5 5 0 0 1 5-5Z"
+          stroke-width="2.4" stroke-linejoin="round"/>
+    <rect x="7" y="11.5" width="9.5" height="9" rx="3.2" fill="#ffffff" stroke="none" opacity=".55"/>
+    <rect x="19.5" y="11.5" width="9.5" height="9" rx="3.2" fill="#ffffff" stroke="none" opacity=".55"/>
+    <path d="M37.5 9.5a10 10 0 0 1 0 13M42.5 6a16 16 0 0 1 0 20"
+          stroke-width="2.4" stroke-linecap="round" opacity=".75"/>
+  </g>
+</svg>

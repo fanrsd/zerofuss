@@ -1,0 +1,708 @@
+/* Zerofuss - tema gelap, satu layar, tanpa framework CSS.
+   Radius konsentris: kartu 14 dengan padding 4 -> kontrol di dalamnya 10. */
+
+:root {
+  --bg: #0a0c0f;
+  --panel: #12161b;
+  --panel-2: #171d25;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-2: rgba(255, 255, 255, 0.14);
+  --text: #e7ecf3;
+  --dim: #8a94a3;
+  --accent: #38bdf8;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --bad: #f87171;
+  --r-card: 14px;
+  --r-ctl: 10px;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+* { box-sizing: border-box; }
+
+/* `[hidden]` harus menang. Aturan `display` bawaan browser untuk atribut ini
+   kalah dari selector kelas apa pun, jadi `.btn { display: inline-flex }` sudah
+   dua kali membuat elemen yang disembunyikan JS tetap tampil - bug yang tidak
+   kelihatan sampai seseorang menekan tombol yang seharusnya tidak ada. Satu
+   aturan di sini mematikan seluruh kelas bug itu. */
+[hidden] { display: none !important; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+body {
+  display: grid;
+  grid-template-rows: 56px 1fr;
+  position: relative;
+}
+
+/* ------------------------------------------------------------------ top bar */
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 12px 0 16px;
+  background: var(--panel);
+  /* Bayangan berlapis, bukan garis keras, supaya batas tetap terbaca di
+     atas video terang maupun gelap. */
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05),
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    0 12px 24px -12px rgba(0, 0, 0, 0.6);
+  position: relative;
+  z-index: 3;
+}
+
+.brand { display: flex; align-items: center; gap: 9px; }
+.brand-mark { width: 30px; height: 20px; color: var(--accent); }
+.brand-name { font-size: 15px; font-weight: 650; letter-spacing: 0.2px; }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 26px;
+  padding: 0 10px 0 8px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.pill .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.pill[data-state="live"] { color: var(--ok); }
+.pill[data-state="wait"] { color: var(--warn); }
+.pill[data-state="error"] { color: var(--bad); }
+/* Denyut hanya saat menunggu: gerak di UI harus punya arti. */
+.pill[data-state="wait"] .dot { animation: pulse 1.4s var(--ease) infinite; }
+@keyframes pulse { 50% { opacity: 0.25; } }
+
+/* Statistik adalah satu-satunya bagian bar yang boleh menyusut.
+
+   Tanpa ini, min-width tiap angka membuat bar tumbuh melebihi jendela dan
+   tombol-tombol kanan (termasuk gear) terdorong ke luar layar - persis yang
+   terjadi pada lebar jendela minimum 880 px. Tombol tidak boleh pernah hilang;
+   angka boleh. */
+.stats { display: flex; gap: 22px; margin: 0; flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.stat { display: flex; flex-direction: column; gap: 1px; min-width: 62px; flex: 0 1 auto; }
+.brand, .pill, .actions { flex: none; }
+
+/* Sebelum penyusutan sampai memotong angka, sembunyikan saja - lebih jujur
+   daripada "8.1 Mb" yang terpotong. */
+@media (max-width: 1040px) {
+  .stats { display: none; }
+}
+.stat dt { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+.stat dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  /* Angka berubah tiap 250 ms; tanpa ini lebarnya goyang terus. */
+  font-variant-numeric: tabular-nums;
+}
+#s-loss[data-warn] { color: var(--warn); }
+/* Rasio yang dipaksa: kuning supaya terbaca sebagai setelan aktif, bukan fakta
+   stream. Gambar terperas berbilah tanpa penjelasan adalah tebakan yang mahal. */
+#s-res[data-warn] { color: var(--warn); }
+/* Ditandai hanya saat korupsi masih bertambah padahal paket tidak hilang -
+   bentuk yang bukan intra-refresh biasa. */
+#s-loss[data-bad] { color: var(--bad); }
+
+.actions { display: flex; align-items: center; gap: 8px; }
+
+/* ------------------------------------------------------------------ tombol */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px; /* hit area padat-desktop */
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--r-ctl);
+  background: var(--panel-2);
+  box-shadow: inset 0 0 0 1px var(--line), 0 1px 2px rgba(0, 0, 0, 0.3);
+  color: var(--text);
+  font: inherit;
+  font-weight: 550;
+  cursor: pointer;
+  /* Properti disebut satu-satu; `transition: all` mengejutkan di kemudian hari. */
+  transition-property: background-color, box-shadow, color, scale, opacity;
+  transition-duration: 140ms;
+  transition-timing-function: var(--ease);
+}
+.btn:hover { background: #1e2632; box-shadow: inset 0 0 0 1px var(--line-2), 0 1px 2px rgba(0, 0, 0, 0.3); }
+.btn:active { scale: 0.96; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn:disabled { opacity: 0.4; cursor: default; scale: 1; }
+
+.btn[data-primary] {
+  background: var(--accent);
+  color: #04121c;
+  font-weight: 650;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 16px -6px rgba(56, 189, 248, 0.6);
+}
+.btn[data-primary]:hover { background: #5ccdff; }
+
+.btn-ghost { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.btn-ghost:hover { background: var(--panel-2); }
+
+.btn-icon { min-width: 40px; padding: 0 12px; }
+.btn-icon:not(:has(.btn-label)) { padding: 0; }
+.btn-sm { min-height: 32px; padding: 0 12px; font-size: 13px; }
+.btn-lg { min-height: 44px; padding: 0 20px; font-size: 15px; }
+
+.ico { width: 18px; height: 18px; flex: none; }
+/* Dua ikon tetap ada di DOM dan saling silang-pudar: dapat animasi masuk dan
+   keluar tanpa pustaka animasi apa pun. */
+.btn-icon { position: relative; }
+.ico-alt {
+  position: absolute;
+  left: 12px;
+  opacity: 0;
+  scale: 0.25;
+  filter: blur(4px);
+  transition-property: opacity, scale, filter;
+  transition-duration: 220ms;
+  transition-timing-function: var(--ease);
+}
+.ico { transition-property: opacity, scale, filter; transition-duration: 220ms; transition-timing-function: var(--ease); }
+#btn-rec[data-on] .ico { opacity: 0; scale: 0.25; filter: blur(4px); }
+#btn-rec[data-on] .ico-alt { opacity: 1; scale: 1; filter: blur(0); }
+#btn-rec[data-on] { color: var(--bad); }
+.btn-label {
+  font-variant-numeric: tabular-nums;
+  min-width: 58px;
+  text-align: left;
+}
+
+/* ------------------------------------------------------------------- stage */
+
+.stage {
+  position: relative;
+  background: #000;
+  overflow: hidden;
+  min-height: 0;
+}
+
+#view {
+  /* Diposisikan absolut, bukan item grid, KARENA `max-height: 100%` harus
+     mengikat. Sebagai item grid tingginya indefinite, jadi persentase itu
+     diabaikan: hanya lebar yang terbatas, dan sumber 4:3 menjadi 1280x960 di
+     panggung 1280x744 - 216 px terpotong overflow, terukur. Sebagai kotak
+     absolut, persentase menyelesaikan diri terhadap panggung yang tingginya
+     sudah pasti, jadi sumber yang sama menjadi 992x744: utuh dan terpusat.
+     `inset: 0` + `margin: auto` yang memusatkannya. */
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  /* Garis tipis putih transparan, bukan abu bernada - warna bernada terbaca
+     seperti kotoran di tepi gambar. */
+  outline: 1px solid rgba(255, 255, 255, 0.1);
+  outline-offset: -1px;
+  opacity: 0;
+  transition-property: opacity;
+  transition-duration: 260ms;
+  transition-timing-function: var(--ease);
+}
+.stage[data-live] #view { opacity: 1; }
+
+.idle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px;
+  text-align: center;
+  /* Keluar lebih lembut daripada masuk: geser kecil, bukan setinggi elemen. */
+  transition-property: opacity, translate;
+  transition-duration: 220ms;
+  transition-timing-function: var(--ease);
+}
+.stage[data-live] .idle { opacity: 0; translate: 0 -8px; pointer-events: none; }
+
+.idle-mark { width: 84px; height: 56px; color: #33414f; }
+.idle-title { margin: 0; font-size: 19px; font-weight: 650; text-wrap: balance; }
+.idle-hint {
+  margin: 0;
+  max-width: 46ch;
+  color: var(--dim);
+  text-wrap: pretty;
+}
+.idle-hint b { color: #b9c3d1; font-weight: 600; }
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--dim);
+}
+.steps li {
+  padding: 5px 12px;
+  border-radius: var(--r-ctl);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--line);
+  /* Breadcrumb dibaca sebagai satu kesatuan; jangan dipotong di tengah. */
+  white-space: nowrap;
+}
+.steps b { color: #cdd6e3; font-weight: 600; }
+.steps[hidden] { display: none; }
+
+.idle-act { display: flex; gap: 10px; margin-top: 4px; }
+.idle-note { margin: 0; min-height: 18px; font-size: 12.5px; color: var(--warn); }
+
+/* Masuk dipecah per bagian dan digeser 90 ms - bukan satu wadah dianimasi. */
+.idle > * { animation: rise 420ms var(--ease) backwards; }
+.idle > :nth-child(1) { animation-delay: 40ms; }
+.idle > :nth-child(2) { animation-delay: 130ms; }
+.idle > :nth-child(3) { animation-delay: 220ms; }
+.idle > :nth-child(4) { animation-delay: 310ms; }
+.idle > :nth-child(5) { animation-delay: 400ms; }
+.idle > :nth-child(6) { animation-delay: 490ms; }
+@keyframes rise { from { opacity: 0; translate: 0 10px; } }
+
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  translate: -50% 0;
+  max-width: 70ch;
+  padding: 10px 14px;
+  border-radius: var(--r-ctl);
+  background: rgba(18, 22, 27, 0.96);
+  box-shadow: inset 0 0 0 1px var(--line-2), 0 8px 28px -8px rgba(0, 0, 0, 0.9);
+  font-size: 13px;
+  text-wrap: pretty;
+  animation: rise 260ms var(--ease);
+}
+.toast[data-bad] { color: #ffc9c9; box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.45), 0 8px 28px -8px rgba(0, 0, 0, 0.9); }
+
+/* ------------------------------------------------------------------ drawer */
+
+.panel {
+  position: fixed;
+  top: 56px;
+  right: 0;
+  bottom: 0;
+  width: 392px;
+  padding: 4px; /* radius konsentris: 14 luar - 4 padding = 10 dalam */
+  overflow-y: auto;
+  background: var(--panel);
+  box-shadow: -18px 0 40px -20px rgba(0, 0, 0, 0.9), inset 1px 0 0 var(--line);
+  z-index: 4;
+  animation: slide 240ms var(--ease);
+  user-select: text;
+}
+.panel[hidden] { display: none; }
+@keyframes slide { from { translate: 16px 0; opacity: 0; } }
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 8px 10px 14px;
+}
+.panel-head h2 { margin: 0; font-size: 16px; font-weight: 650; }
+
+.group {
+  margin: 6px 0 14px;
+  padding: 14px;
+  border-radius: var(--r-card);
+  background: var(--panel-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.group h3 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+/* Subjudul di dalam satu bagian panduan. Dibedakan dari h3 dengan berat dan
+   warna, bukan dengan ukuran - h3 sudah 11px, mengecilkan lagi tidak terbaca. */
+.group h4 {
+  margin: 16px 0 8px;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--text);
+}
+.note { margin: 0 0 12px; font-size: 12.5px; color: var(--dim); text-wrap: pretty; }
+.note code {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  font-size: 11.5px;
+  color: #b9c3d1;
+  user-select: all;
+}
+
+.tiny { display: block; margin-top: 6px; font-size: 11.5px; color: #6f7a89; }
+
+/* Penanda "blok ini cuma berlaku di satu OS" di panduan. Blok yang membawanya
+   disembunyikan sendiri di OS lain (lihat `data-os` di main.js), jadi penanda
+   ini hanya dibaca orang yang memang di OS itu - gunanya supaya langkah yang
+   khusus Windows tidak terbaca sebagai langkah universal. Sengaja sekecil
+   mungkin: ia label, bukan peringatan. */
+.os {
+  display: inline-block;
+  margin-right: 7px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim);
+  vertical-align: 1px;
+}
+
+.row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.row > span:first-child { flex: none; width: 116px; font-size: 13px; color: var(--dim); }
+.row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-ctl);
+  background: rgba(0, 0, 0, 0.42);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  transition-property: box-shadow;
+  transition-duration: 140ms;
+  transition-timing-function: var(--ease);
+}
+.row input:focus { outline: 0; box-shadow: inset 0 0 0 1px var(--accent); }
+/* Pemilih rasio. Tombolnya berdempet supaya terbaca sebagai satu pilihan
+   bertiga, bukan tiga tindakan terpisah - hanya satu yang bisa aktif. */
+.row-btn > span:first-child { width: 116px; }
+.adapter { flex: 1; font-size: 13px; font-weight: 550; color: var(--warn); }
+.adapter[data-ok] { color: var(--ok); }
+
+.diag { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin: 0 0 12px; }
+.diag dt { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+.diag dd { margin: 0; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.log {
+  margin: 0;
+  max-height: 168px;
+  overflow: auto;
+  padding: 10px;
+  border-radius: var(--r-ctl);
+  background: rgba(0, 0, 0, 0.42);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font: 11.5px/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color: var(--dim);
+  white-space: pre-wrap;
+  user-select: text;
+}
+
+/* Layar penuh: hanya video, bar disembunyikan. */
+/* Stage menyusut selebar panel yang terbuka: gambar tidak tertutup dan
+   komposisinya tetap seimbang. Anak absolute berpatokan pada padding box,
+   jadi overlay perlu offset sendiri. */
+body:has(#drawer:not([hidden])) .stage { padding-right: 392px; }
+body:has(#drawer:not([hidden])) .idle { right: 392px; }
+body:has(#guide:not([hidden])) .stage { padding-right: 520px; }
+body:has(#guide:not([hidden])) .idle { right: 520px; }
+
+/* Layar penuh & mode bersih: gambar mengisi jendela, bar jadi overlay yang
+   bersembunyi. Sebelumnya layar penuh mem-fullscreen-kan elemen gambar saja,
+   jadi bar tidak ikut dirender dan tidak ada jalan pulang yang kelihatan. */
+body[data-overlay] { grid-template-rows: 1fr; }
+body[data-overlay] .bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  background: rgba(10, 12, 15, 0.86);
+  backdrop-filter: blur(10px);
+  translate: 0 -100%;
+  opacity: 0;
+  transition-property: translate, opacity;
+  transition-duration: 180ms;
+  transition-timing-function: var(--ease);
+}
+body[data-overlay] .panel { top: 0; }
+
+/* Muncul saat kursor di strip tepi atas, saat kursor sudah di atas bar itu
+   sendiri (supaya tidak kabur ketika mau diklik), atau saat disematkan. */
+body[data-overlay]:has(#peek:hover) .bar,
+body[data-overlay]:has(.bar:hover) .bar,
+body[data-overlay]:has(.panel:not([hidden])) .bar,
+body[data-overlay][data-pin] .bar {
+  translate: 0 0;
+  opacity: 1;
+}
+
+.peek { display: none; }
+body[data-overlay] .peek {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 12px;
+  z-index: 5;
+}
+
+/* Tombol pin menyala saat aktif, supaya keadaannya terbaca sekali lihat. */
+#btn-pin[data-on] { color: var(--accent); box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.5); }
+#btn-full[data-on] .ico { opacity: 0; scale: 0.25; filter: blur(4px); }
+#btn-full[data-on] .ico-alt { opacity: 1; scale: 1; filter: blur(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
+
+/* ------------------------------------------------------- panel & kontrol baru */
+
+.panel-wide { width: 520px; }
+
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+.note-tight { margin: 10px 0 0; }
+
+/* Checkbox dan slider bawaan dengan accent-color: aksesibel, nol kode, dan
+   sudah benar di tema gelap. Saklar buatan sendiri hanya menambah bug. */
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.switch input {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.range { display: flex; align-items: center; gap: 10px; min-height: 34px; }
+.range > span { flex: none; width: 78px; font-size: 13px; color: var(--dim); }
+.range input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.range output {
+  flex: none;
+  width: 44px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.range[data-off] { opacity: 0.4; pointer-events: none; }
+
+/* Identitas adapter dan tabel nilai di panduan */
+.ident, .kv { display: grid; gap: 7px 12px; margin: 10px 0 0; }
+.ident > div, .kv > div { display: grid; grid-template-columns: 116px 1fr; gap: 10px; align-items: baseline; }
+.ident dt, .kv dt { font-size: 12px; color: var(--dim); }
+.ident dd, .kv dd {
+  user-select: all;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  word-break: break-word;
+  font-variant-numeric: tabular-nums;
+}
+.ident[hidden] { display: none; }
+
+/* Panduan: daftar langkah dan bagian yang bisa dilipat */
+.panel ol, .panel ul { margin: 8px 0 0; padding-left: 20px; font-size: 13px; color: #b7c1cf; }
+.panel ol { counter-reset: none; }
+.panel li { margin-bottom: 6px; text-wrap: pretty; }
+.panel li b { color: #dbe3ee; font-weight: 600; }
+.panel li::marker { color: var(--dim); }
+
+details { margin-top: 10px; }
+summary {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: var(--r-ctl);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  transition-property: background-color, box-shadow;
+  transition-duration: 140ms;
+  transition-timing-function: var(--ease);
+}
+summary:hover { background: rgba(255, 255, 255, 0.07); box-shadow: inset 0 0 0 1px var(--line-2); }
+summary { justify-content: space-between; }
+summary::marker, summary::-webkit-details-marker { display: none; content: ""; }
+summary::after {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin-left: 10px;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  rotate: 45deg;
+  opacity: 0.5;
+  transition-property: rotate, opacity;
+  transition-duration: 180ms;
+  transition-timing-function: var(--ease);
+}
+summary:hover::after { opacity: 0.9; }
+details[open] summary::after { rotate: 225deg; }
+details[open] summary { margin-bottom: 4px; }
+
+.panel a { color: var(--accent); text-decoration: none; }
+.panel a:hover { text-decoration: underline; }
+
+
+
+/* ------------------------------------------------------------------ onboarding */
+
+/* Latar modal. `visibility` dipakai bersama `opacity` - bukan `display` -
+   supaya keluar-masuknya bisa ditransisikan tanpa bergantung pada dukungan
+   @starting-style di WebView2 versi mana pun. */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(4, 6, 9, 0.66);
+  backdrop-filter: blur(6px);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 200ms var(--ease), visibility 200ms;
+}
+.sheet[data-open] { visibility: visible; opacity: 1; }
+
+/* Modal tetap berpusat: ia tidak berjangkar ke pemicu mana pun, jadi
+   transform-origin bawaan memang yang benar di sini. */
+.sheet-card {
+  width: min(520px, 100%);
+  background: var(--panel);
+  border-radius: var(--r-card);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 24px 64px rgba(0, 0, 0, 0.55);
+  padding: 16px 18px 14px;
+  scale: 0.96;
+  transition: scale 220ms var(--ease);
+}
+.sheet[data-open] .sheet-card { scale: 1; }
+
+.ob-head { display: flex; align-items: center; gap: 10px; }
+.ob-hitung {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+.ob-head .btn { margin-left: auto; }
+
+/* Tinggi dipatok supaya kartu tidak melompat saat langkah berganti - tiga
+   tangkapan goggles punya rasio yang berbeda jauh (3.4 sampai 6.6). Ada sisa
+   ruang di langkah yang gambarnya paling pendek, dan itu pilihan yang sadar:
+   kartu yang berubah tinggi tiap klik jauh lebih mengganggu. */
+.ob-gambar {
+  height: 152px;
+  margin: 12px 0 14px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-ctl);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+/* width/height eksplisit, BUKAN max-*: persentase max-height pada grid item
+   auto-sized itu indefinite, jadi diabaikan - gambarnya terpotong alih-alih
+   di-letterbox. object-fit yang mengurus rasio. */
+.ob-gambar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.ob-gambar svg { width: 186px; height: 124px; color: var(--accent); }
+
+/* Tinggi teks dipatok juga, bukan hanya kotak gambar: panjang salinan tiap
+   langkah berbeda, dan tanpa ini kartu tetap melompat 40-an piksel setiap klik
+   Lanjut - terukur 354 sampai 396 px. */
+.ob-teks { min-height: 96px; }
+.ob-teks h2 { margin: 0 0 6px; font-size: 16px; }
+.ob-teks p { margin: 0; color: var(--dim); line-height: 1.5; text-wrap: pretty; }
+.ob-teks b { color: var(--text); font-weight: 600; }
+
+/* Isi langkah masuk dari sisi arah gerak. Blur tipis dipakai dengan sengaja:
+   gambar DAN teks berganti sekaligus, dan tanpa blur mata menangkap dua objek
+   yang bertukar, bukan satu yang berubah. */
+.ob-gambar, .ob-teks {
+  transition: opacity 180ms var(--ease), translate 180ms var(--ease),
+              filter 180ms var(--ease);
+}
+.sheet[data-masuk="maju"] .ob-gambar,
+.sheet[data-masuk="maju"] .ob-teks { opacity: 0; translate: 14px 0; filter: blur(3px); }
+.sheet[data-masuk="mundur"] .ob-gambar,
+.sheet[data-masuk="mundur"] .ob-teks { opacity: 0; translate: -14px 0; filter: blur(3px); }
+
+.ob-kaki { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.ob-aksi { display: flex; gap: 8px; margin-left: auto; }
+
+.ob-titik { display: flex; gap: 6px; }
+.ob-titik i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  transition: width 200ms var(--ease), background 200ms var(--ease);
+}
+.ob-titik i[data-kini] { width: 18px; background: var(--accent); }
+
+/* Gerak dikurangi. Durasi tidak diatur di sini dengan sengaja: aturan global
+   di atas sudah memaksa 1 ms dengan !important. Yang masih perlu dibuang
+   adalah pergeseran, skala, dan blur - itu bagian yang memicu mual. */
+@media (prefers-reduced-motion: reduce) {
+  .sheet-card { scale: 1; }
+  .sheet[data-masuk] .ob-gambar,
+  .sheet[data-masuk] .ob-teks { translate: none; filter: none; }
+}

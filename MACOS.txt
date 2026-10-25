@@ -1,0 +1,271 @@
+Zerofuss di macOS.
+
+Dua unduhan, satu per arsitektur: Zerofuss_<versi>_aarch64.dmg untuk Apple
+Silicon dan Zerofuss_<versi>_x64.dmg untuk Intel. Dua-duanya native, tanpa
+Rosetta, dan separuh ukuran bundle universal karena tidak ikut membawa
+potongan arsitektur yang tidak dipakai Mac-mu. Minimum macOS 11 (Big Sur) -
+Big Sur adalah macOS pertama untuk Apple Silicon, jadi di bawah itu build
+arm64 tidak membeli apa pun, dan WKWebView-nya tetap versi yang masih layak.
+Bundle universal masih bisa dibangun sendiri kalau memang perlu:
+sh bangun-mac.sh --universal.
+
+Yang perlu kamu tahu sebelum mulai: dua keluarga goggles yang didukung
+Zerofuss dua-duanya jalan di macOS, dan dua-duanya tanpa pemasangan driver
+apa pun.
+
+
+------------------------------------------------------------------------------
+YANG JALAN: FPV Goggles V1/V2 (PID 001f)
+------------------------------------------------------------------------------
+
+Jalur USB bulk. Nol pemasangan driver, nol admin, nol reboot.
+
+Interface 3 di goggles itu berkelas vendor (0xFF). Tidak ada driver bawaan
+macOS yang mengklaim kelas itu, jadi interface-nya menganggur dan aplikasi
+boleh langsung claim-nya. Ini kebalikan dari Windows, yang justru butuh WinUSB
+dipasang manual pakai Zadig sebelum interface yang sama bisa dibuka.
+
+Langkahnya sama seperti di Windows, minus drivernya:
+
+  1. Colok goggles ke Mac pakai kabel USB-C data (bukan kabel charge-only).
+  2. Buka Zerofuss, tekan Sambungkan.
+
+Kalau claim gagal dengan Busy/PermissionDenied: interface-nya sedang dipakai
+program lain - tutup DigiView, tab browser WebUSB, atau jendela Zerofuss
+kedua.
+
+
+------------------------------------------------------------------------------
+JALAN JUGA: Goggles 3 / N3 (PID 0020)
+------------------------------------------------------------------------------
+
+Host RNDIS di user space. Nol pemasangan driver, nol kext, nol admin, nol IP
+statis, dan nol adapter jaringan yang harus disetel. Langkahnya:
+
+  1. Colok goggles ke Mac pakai kabel USB-C data (bukan kabel charge-only).
+  2. Buka Zerofuss, tekan Sambungkan.
+
+Itu semuanya - di macOS langkah Goggles 3 justru LEBIH SEDIKIT daripada di
+Windows, yang masih butuh satu prompt admin untuk alamat statisnya.
+
+Kenapa bisa, dan kenapa justru di macOS: Goggles 3 dan N3 mengirim video lewat
+fungsi USB RNDIS plus UDP, dan macOS TIDAK punya driver host RNDIS. Ketiadaan
+driver itu yang membuka jalan - tidak ada modul kernel yang memegang interface
+tersebut, jadi interface-nya menganggur dan aplikasi boleh mengklaimnya
+sendiri. Zerofuss mengklaimnya dengan crate nusb lalu menjalankan sisi host
+RNDIS-nya sendiri di user space: INITIALIZE, baca MAC perangkat, pasang filter
+paket, jawab ARP, kirim paket open DJI, lalu bongkar UDP dari dalam Ethernet
+frame yang masuk. Semuanya di dalam proses aplikasi, jadi tidak ada kext yang
+perlu dipasang dan SIP tidak perlu disentuh.
+
+Di Windows dan Linux kebalikannya justru yang berlaku: kernel di sana PUNYA
+driver RNDIS, driver itu yang memegang interface, dan aplikasi tidak boleh
+mengambilnya. Karena itu di dua OS tersebut jalurnya tetap adapter jaringan
+plus alamat statis 192.168.60.1/24 - di Windows lewat tombol Setel adapter
+yang minta admin. Tombol Setel adapter dan Bersihkan memang tidak muncul di
+macOS: di sini tidak ada adapter yang bisa disetel, dan tidak ada yang perlu
+disetel.
+
+Kalau kext bukan pilihan, kenapa yakin user space bisa? Karena sudah ada yang
+melakukannya di Apple Silicon:
+
+  - JellyBrick/ReRNDIS - https://github.com/JellyBrick/ReRNDIS
+  - hknsglm/android-usb-tether-macos -
+    https://github.com/hknsglm/android-usb-tether-macos
+
+Keduanya host RNDIS di user space lewat libusb, tanpa kext, dan jalan di
+Apple Silicon. Zerofuss memakai pendekatan yang sama, cuma dengan nusb sebagai
+ganti libusb. HoRNDIS - satu-satunya driver RNDIS pihak ketiga untuk macOS -
+berbentuk kext, dan kext pihak ketiga sudah mati di Apple Silicon; itu alasan
+jalurnya user space, bukan kernel.
+
+Yang BUKAN jalurnya: USB bulk. Interface bulk di Goggles 3 ada di descriptor
+dan bentuknya identik dengan V1/V2, tapi dorman - endpoint OUT-nya timeout
+pada tulisan APA PUN dan endpoint IN-nya tidak pernah mengeluarkan satu byte.
+Sudah diukur langsung, lihat uji-usb/README.txt. Jadi PID 0020 selalu
+dirutekan ke jalur RNDIS, di semua OS.
+
+
+------------------------------------------------------------------------------
+STATUS JALUR INI: TERBUKTI DI HARDWARE
+------------------------------------------------------------------------------
+
+Diuji di MacBook Air (Apple Silicon) dengan Goggles 3 dan air unit hidup,
+lewat `bun run tauri dev`: interface RNDIS diklaim, INITIALIZE dibalas, dan
+GAMBAR MUNCUL di jendela. Tanpa driver, tanpa kext, tanpa adapter jaringan,
+tanpa alamat statis, tanpa satu pun prompt admin.
+
+Yang terukur di sesi itu, untuk rujukan:
+
+  klaim + INITIALIZE        OK
+  MAC perangkat             ca:dc:a4:48:ce:f0
+  MaxTransferSize           1580 B (gadget RNDIS Linux: MTU + 44 + 22)
+  MaxPacketsPerTransfer     1
+  PacketAlignmentFactor     0
+  medium                    0 (802.3)
+  ARP ke 192.168.60.2       TIDAK dijawab goggles
+  aliran video              5766 paket / 7.871 KB dalam 8 detik
+  laju mapan                8,5 Mbps, 762 paket/detik
+  gambar                    1920x1080, 50 frame/detik terdekode
+  paket hilang / dibuang    0 / 0
+  restart decoder           0
+  frame korup               11 di 5 detik pertama, +6 di 3 detik berikutnya
+                            (6 dari ~150 frame = 4%)
+
+Frame korup di awal itu memang diharapkan, bukan gejala: stream goggles
+praktis tanpa keyframe, jadi decoder dipaksa mengeluarkan gambar sebelum
+keyframe (`-flags2 +showall`), dan gambar penuh baru terbentuk setelah satu
+putaran intra-refresh - sekali saja, sekitar 4 detik.
+
+Sisa 4% yang masih menetes sesudahnya juga BUKAN soal jalur ini, dan
+alasannya bisa dibaca dari angka di atas: `paket hilang` dan `paket dibuang`
+dua-duanya NOL, jadi byte yang masuk decoder sama persis dengan yang dikirim
+goggles. Kerusakan yang tersisa karena itu lahir di HULU - tautan radio
+air unit -> goggles - bukan di kabel USB, bukan di tumpukan RNDIS, bukan di
+Mac. Uji sendiri kalau perlu: angkanya bergerak saat drone didekatkan atau
+dijauhkan, dan tidak bergerak saat kabel USB-nya diganti.
+
+Karena itu `--uji-rndis` memutuskan dengan dua syarat sekaligus: korup yang
+berhenti bertambah = intra-refresh; korup di bawah 5% dengan hilang/dibuang
+nol = hulu, tidak ada yang bisa diperbaiki di sisi ini; sisanya = benar-benar
+bermasalah, dan barulah log ffmpeg ditampilkan.
+
+ARP yang tidak dijawab itu bukan kegagalan: goggles menerima frame yang
+dialamatkan ke MAC fungsi RNDIS-nya, dan itulah tujuan yang dipakai kalau ARP
+diam. Video tetap jalan. ARP tetap dikirim sebagai pelengkap - kalau suatu
+firmware menjawabnya, jawabannya yang dipakai.
+
+Sesi itu juga menemukan dua bug yang tidak akan pernah terlihat tanpa
+hardware: `MaxTransferSize` dibaca dari byte ke-40 (yang sebenarnya
+PacketAlignmentFactor, bernilai 0, sehingga terkerek jadi 1024 dan tampak
+wajar), dan `--uji-rndis` sendiri masih memegang interface saat mencoba
+membuka pipa - jadi ia menuduh "program lain" padahal itu dirinya sendiri.
+Keduanya sudah diperbaiki dan dikunci dengan tes regresi.
+
+Untuk mengulang pengujiannya dari Terminal - bukan dari GUI, supaya setiap
+langkah kelihatan:
+
+  Zerofuss.app/Contents/MacOS/zerofuss --uji-rndis
+
+Flag itu mencetak tiap langkah satu per satu: klaim interface, INITIALIZE
+(beserta keempat nilainya), MAC perangkat, filter paket, ARP, paket open DJI,
+lalu hitungan paket video selama 5 detik. Langkah mana yang berhenti, di
+situlah masalahnya.
+
+Satu hal yang WAJIB: tutup jendela Zerofuss (termasuk `bun run tauri dev`)
+sebelum menjalankan flag itu. Satu interface USB hanya boleh dipegang satu
+pemilik, jadi aplikasi dan alat uji tidak bisa jalan bersamaan.
+
+
+------------------------------------------------------------------------------
+MEMBANGUN
+------------------------------------------------------------------------------
+
+Syarat: macOS 11+, Xcode Command Line Tools (xcode-select --install), rustup,
+bun.
+
+  rustup target add aarch64-apple-darwin x86_64-apple-darwin
+  sh ambil-ffmpeg-mac.sh
+  sh bangun-mac.sh
+
+ambil-ffmpeg-mac.sh mengunduh ffmpeg statik untuk arm64 dan x86_64, mengecek
+sha256 keduanya terhadap nilai yang dipaku di skrip, menyatukannya dengan
+lipo, lalu menandatanganinya ad-hoc - lipo membuang tanda tangan kedua
+potongan, dan di Apple Silicon binary tanpa tanda tangan langsung dibunuh
+kernel. Hasilnya bin-mac/ffmpeg. Kalau salah satu arsitektur gagal diunduh,
+skrip tetap menghasilkan binary satu arsitektur tapi mencetak peringatan -
+jangan sebar hasil itu.
+
+bangun-mac.sh memeriksa semua syarat dulu, baru menjalankan
+
+  bun run tauri build --target aarch64-apple-darwin
+  bun run tauri build --target x86_64-apple-darwin
+
+dari app/. Tanpa argumen dua-duanya dibangun - itu pasangan yang dirilis.
+--arm atau --intel membatasinya ke satu, --universal menambah satu bundle
+universal-apple-darwin. Hasilnya per target di
+
+  app/src-tauri/target/<triple>/release/bundle/
+    macos/Zerofuss.app
+    dmg/Zerofuss_<versi>_aarch64.dmg   (dari aarch64-apple-darwin)
+    dmg/Zerofuss_<versi>_x64.dmg       (dari x86_64-apple-darwin)
+
+Nama artefak itu yang dipakai di halaman rilis, jadi jangan diganti sendiri.
+Langkah rilis lengkapnya ada di RILIS.txt.
+
+
+------------------------------------------------------------------------------
+KENAPA FFMPEG DIBUNGKUS KE DALAM .APP
+------------------------------------------------------------------------------
+
+Aplikasi GUI yang dibuka dari Finder atau Dock diluncurkan oleh launchd dan
+TIDAK mewarisi PATH shell kamu. Lingkungannya cuma jalur sistem, tanpa
+/opt/homebrew/bin. Jadi `brew install ffmpeg` saja tidak bisa diandalkan: yang
+dipasang Homebrew hanya kelihatan kalau aplikasinya dijalankan dari Terminal.
+
+Karena itu ffmpeg ikut dibungkus di Zerofuss.app/Contents/Resources/ffmpeg.
+Urutan pencariannya:
+
+  1. variabel lingkungan ZEROFUSS_FFMPEG (jalur lengkap ke binary)
+  2. Contents/Resources/ffmpeg di dalam bundle
+  3. /opt/homebrew/bin/ffmpeg   (Homebrew di Apple Silicon)
+  4. /usr/local/bin/ffmpeg      (Homebrew di Intel)
+
+Kalau tidak satu pun ketemu, Zerofuss bilang ffmpeg tidak ada dan streaming
+tidak bisa dimulai.
+
+
+------------------------------------------------------------------------------
+TANDA TANGAN, NOTARISASI, DAN BUILD TANPA TANDA TANGAN
+------------------------------------------------------------------------------
+
+Bundle-nya dibangun dengan hardened runtime menyala dan entitlement
+app/src-tauri/Entitlements.plist yang memberi com.apple.security.device.usb.
+Entitlement itu wajib: tanpa dia, build yang ditandatangani dan dinotarisasi
+akan terbuka normal tapi tidak bisa membuka interface USB goggles sama sekali.
+
+bangun-mac.sh sendiri tidak menyetel identitas apa pun. Semua lewat variabel
+lingkungan yang sudah dibaca Tauri CLI:
+
+  APPLE_SIGNING_IDENTITY      nama identitas di keychain, dari
+                              security find-identity -v -p codesigning
+  APPLE_CERTIFICATE           .p12 dalam base64 (untuk CI)
+  APPLE_CERTIFICATE_PASSWORD  sandi .p12 itu
+
+Notarisasi, pilih satu paket:
+
+  APPLE_ID + APPLE_PASSWORD + APPLE_TEAM_ID
+  APPLE_API_KEY + APPLE_API_ISSUER + APPLE_API_KEY_PATH
+
+APPLE_TEAM_ID wajib ikut walau halaman dokumentasi Tauri tidak menyebutnya -
+di tauri-bundler ketiga variabel itu dibaca sebagai satu paket bertiga.
+
+Kalau APPLE_SIGNING_IDENTITY terisi, bangun-mac.sh menandatangani
+bin-mac/ffmpeg lebih dulu:
+
+  codesign --force --timestamp --options runtime \
+    --sign "$APPLE_SIGNING_IDENTITY" bin-mac/ffmpeg
+
+Itu bukan hiasan. ffmpeg jadi Mach-O bersarang di Contents/Resources, dan
+notarisasi menolak bundle yang punya executable bersarang tanpa tanda tangan.
+--options runtime harus ikut karena bundle-nya hardened runtime. Kalau
+APPLE_SIGNING_IDENTITY kosong, langkah ini dilewati.
+
+Kalau semua variabel kosong, build tetap selesai tapi tanpa tanda tangan.
+Gatekeeper akan menolaknya dengan pesan "aplikasi rusak". Sesudah menyalin
+.app ke /Applications, buang atribut karantinanya:
+
+  xattr -dr com.apple.quarantine /Applications/Zerofuss.app
+
+Cukup sekali per salinan .app.
+
+
+------------------------------------------------------------------------------
+DI MANA BERKASNYA
+------------------------------------------------------------------------------
+
+  Rekaman  ~/Movies/Zerofuss
+  Setelan  ~/Library/Application Support/id.zerofuss.desktop
+
+Keduanya tidak ikut terhapus saat .app dibuang - hapus manual kalau memang mau
+bersih.

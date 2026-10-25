@@ -1,0 +1,115 @@
+Langkah rilis Zerofuss.
+
+Urutannya mengikat: versi dulu, notices, baru build. Membangun sebelum versinya
+dinaikkan menghasilkan artefak bernama versi lama.
+
+
+------------------------------------------------------------------------------
+1. NAIKKAN VERSI
+------------------------------------------------------------------------------
+
+Tiga berkas, angka yang sama, tanpa awalan "v":
+
+  app/src-tauri/tauri.conf.json    "version": "0.2.0"
+  app/src-tauri/Cargo.toml         version = "0.2.0"
+  app/package.json                 "version": "0.2.0"
+
+Yang menentukan nama artefak hanya tauri.conf.json - itu yang dibaca bundler
+dan itu juga yang dibaca bangun-mac.sh untuk mencetak nama yang diharapkan.
+Yang lain disamakan supaya tidak ada dua angka berbeda di satu repo.
+
+
+------------------------------------------------------------------------------
+2. NOTICES PIHAK KETIGA
+------------------------------------------------------------------------------
+
+  python notices.py
+
+Menulis ulang THIRD-PARTY-NOTICES.txt dari dependensi yang benar-benar
+terpasang. Jalankan sesudah dependensi berubah.
+
+
+------------------------------------------------------------------------------
+3. BUILD WINDOWS
+------------------------------------------------------------------------------
+
+  cd app
+  bun install
+  bun run tauri build
+
+Keluar dua installer di app/src-tauri/target/release/bundle/ :
+
+  nsis/Zerofuss_<versi>_x64-setup.exe
+  msi/Zerofuss_<versi>_x64_en-US.msi
+
+ffmpeg TIDAK ikut terbungkus di Windows. Pemakai harus punya ffmpeg.exe di PATH
+(mis. `winget install Gyan.FFmpeg`), di sebelah zerofuss.exe, atau lewat
+variabel lingkungan ZEROFUSS_FFMPEG. Kalau kamu ingin installer yang mandiri,
+tambahkan ffmpeg.exe ke "bundle.resources" di app/src-tauri/tauri.windows.conf.json
+(contohnya: "path/ke/ffmpeg.exe": "ffmpeg.exe") dan penuhi kewajiban GPL
+yang menyertainya - lihat THIRD-PARTY-NOTICES.txt.
+
+
+------------------------------------------------------------------------------
+4. BUILD MACOS
+------------------------------------------------------------------------------
+
+Harus dijalankan DI Mac - tidak ada cross-build ke macOS dari Windows.
+
+  sh ambil-ffmpeg-mac.sh     <- sekali per mesin
+  sh bangun-mac.sh           <- dmg arm64 + Intel
+
+Tanda tangan dan notarisasi lewat variabel lingkungan (APPLE_SIGNING_IDENTITY
+dan kawan-kawan) - detailnya di MACOS.txt. Tanpa variabel itu build tetap
+selesai, tapi pemakainya harus mencabut karantina sendiri:
+
+  xattr -dr com.apple.quarantine /Applications/Zerofuss.app
+
+
+------------------------------------------------------------------------------
+5. ARTEFAK
+------------------------------------------------------------------------------
+
+  Zerofuss_<versi>_aarch64.dmg       macOS Apple Silicon
+  Zerofuss_<versi>_x64.dmg           macOS Intel
+  Zerofuss_<versi>_x64-setup.exe     Windows, installer NSIS
+  Zerofuss_<versi>_x64_en-US.msi     Windows, MSI
+
+Unggah ke halaman rilis repo dengan tag v<versi>.
+
+
+------------------------------------------------------------------------------
+6. CHECKLIST VERIFIKASI SEBELUM DIUMUMKAN
+------------------------------------------------------------------------------
+
+Windows:
+
+  [ ] Zerofuss_<versi>_x64-setup.exe memasang di mesin bersih, aplikasi
+      terbuka, WebView2 tidak diminta manual
+  [ ] ffmpeg ketemu (PATH / di sebelah aplikasi / ZEROFUSS_FFMPEG)
+  [ ] Goggles 3 lewat adapter jaringan: tombol Setel adapter memberi
+      192.168.60.1/24 lewat satu prompt admin, video mengalir
+  [ ] Bersihkan mengembalikan adapternya ke DHCP
+
+macOS - kedua arsitektur, jangan cuma yang ada di meja:
+
+  [ ] Zerofuss_<versi>_aarch64.dmg terbuka di Apple Silicon dan .app-nya jalan
+  [ ] Zerofuss_<versi>_x64.dmg terbuka di Intel dan .app-nya jalan
+  [ ] build tanpa tanda tangan: sesudah menyalin ke /Applications,
+      `xattr -dr com.apple.quarantine /Applications/Zerofuss.app` membuatnya
+      bisa dibuka (kalau bundle-nya dinotarisasi, langkah ini tidak perlu -
+      pastikan memang tidak perlu, jangan berasumsi)
+  [ ] ffmpeg ada: Zerofuss.app/Contents/Resources/ffmpeg executable, dan
+      streaming benar-benar mulai
+  [ ] FPV Goggles V1/V2: colok, Sambungkan, video mengalir tanpa driver
+  [ ] Goggles 3 / N3 lewat jalur user space RNDIS, dari Terminal:
+
+        Zerofuss.app/Contents/MacOS/zerofuss --uji-rndis
+
+      Flag itu mencetak tiap langkah: klaim interface, INITIALIZE, MAC
+      perangkat, filter paket, ARP, paket open DJI, byte video pertama. Semua
+      langkah harus lewat sampai byte video pertama.
+
+Keduanya:
+
+  [ ] THIRD-PARTY-NOTICES.txt sesuai dengan dependensi terkini

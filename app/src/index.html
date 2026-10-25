@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zerofuss</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- Tanda Zerofuss: badan goggles + dua pancaran siaran. Lensa dibuat
+           bulat dan terpisah supaya tidak terbaca sebagai ikon baterai. -->
+      <symbol id="mark" viewBox="0 0 48 32">
+        <path d="M8 7h18a7 7 0 0 1 7 7v4a7 7 0 0 1-7 7H8a5 5 0 0 1-5-5v-8a5 5 0 0 1 5-5Z"
+              fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+        <rect x="7" y="11.5" width="9.5" height="9" rx="3.2" fill="currentColor" opacity=".55"/>
+        <rect x="19.5" y="11.5" width="9.5" height="9" rx="3.2" fill="currentColor" opacity=".55"/>
+        <path d="M37.5 9.5a10 10 0 0 1 0 13M42.5 6a16 16 0 0 1 0 20"
+              fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".75"/>
+      </symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24">
+        <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-2.87 1.2V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 7.7 19.4l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 3 15H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 7.7l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 10 4.6V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 2.87 1.2l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 21 10.9V11a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"
+              fill="none" stroke="currentColor" stroke-width="1.5"/>
+      </symbol>
+      <symbol id="i-rec" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor"/></symbol>
+      <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></symbol>
+      <symbol id="i-full" viewBox="0 0 24 24">
+        <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </symbol>
+      <symbol id="i-exit" viewBox="0 0 24 24">
+        <path d="M9 4v3.5A1.5 1.5 0 0 1 7.5 9H4M15 9h3.5A1.5 1.5 0 0 1 20 10.5V15M15 20v-3.5a1.5 1.5 0 0 1 1.5-1.5H20M4 15h3.5A1.5 1.5 0 0 1 9 16.5V20"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24">
+        <path d="M9 3h6l-.8 6.2 3.3 3.3H6.5l3.3-3.3L9 3Z" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M12 12.5V21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </symbol>
+      <symbol id="i-help" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M9.3 9.2a2.7 2.7 0 1 1 3.6 2.55c-.55.2-.9.72-.9 1.3v.45" fill="none"
+              stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <circle cx="12" cy="16.6" r="1.05" fill="currentColor"/>
+      </symbol>
+      <!-- Kabel USB-C: langkah pertama tidak punya tangkapan layar goggles,
+           jadi ia butuh gambarnya sendiri. -->
+      <symbol id="i-usb" viewBox="0 0 48 32">
+        <rect x="3" y="10" width="17" height="12" rx="6" fill="none" stroke="currentColor"
+              stroke-width="2.2"/>
+        <path d="M8.5 16h6.5" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round"/>
+        <path d="M20 16h11" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round"/>
+        <rect x="31" y="6" width="14" height="20" rx="3" fill="none" stroke="currentColor"
+              stroke-width="2.2"/>
+        <path d="M35 22h6" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" opacity=".6"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <header class="bar">
+    <div class="brand">
+      <svg class="brand-mark" aria-hidden="true"><use href="#mark"/></svg>
+      <span class="brand-name">Zerofuss</span>
+    </div>
+
+    <div class="pill" id="pill" data-state="idle">
+      <i class="dot"></i><span id="pill-text">Terputus</span>
+    </div>
+
+    <dl class="stats" id="stats">
+      <div class="stat"><dt>FPS</dt><dd id="s-fps">—</dd></div>
+      <div class="stat"><dt>Bitrate</dt><dd id="s-mbps">—</dd></div>
+      <div class="stat"><dt>Hilang</dt><dd id="s-loss">—</dd></div>
+      <div class="stat"><dt>Resolusi</dt><dd id="s-res">—</dd></div>
+    </dl>
+
+    <div class="actions">
+      <button class="btn" id="btn-connect" title="Sambungkan/putuskan">Sambungkan</button>
+      <button class="btn btn-icon" id="btn-rec" title="Rekam (R)" disabled>
+        <svg class="ico" aria-hidden="true"><use href="#i-rec"/></svg>
+        <svg class="ico ico-alt" aria-hidden="true"><use href="#i-stop"/></svg>
+        <span class="btn-label" id="rec-label">Rekam</span>
+      </button>
+      <button class="btn btn-icon" id="btn-full" title="Layar penuh (F)">
+        <svg class="ico" aria-hidden="true"><use href="#i-full"/></svg>
+        <svg class="ico ico-alt" aria-hidden="true"><use href="#i-exit"/></svg>
+      </button>
+      <button class="btn btn-icon" id="btn-pin" title="Sematkan bar (P)">
+        <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>
+      </button>
+      <button class="btn btn-icon" id="btn-help" title="Cara pasang (H)">
+        <svg class="ico" aria-hidden="true"><use href="#i-help"/></svg>
+      </button>
+      <button class="btn btn-icon" id="btn-set" title="Pengaturan (S)">
+        <svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <canvas id="view"></canvas>
+
+    <div class="idle" id="idle">
+      <svg class="idle-mark" aria-hidden="true"><use href="#mark"/></svg>
+      <h1 class="idle-title" id="idle-title">Goggles belum terdeteksi</h1>
+      <p class="idle-hint" id="idle-hint">Colok kabel USB-C, lalu nyalakan OTG di goggles.</p>
+      <div class="idle-act">
+        <button class="btn btn-lg" id="btn-connect2">Sambungkan</button>
+        <button class="btn btn-lg" id="btn-setup">Setel adapter</button>
+        <button class="btn btn-lg btn-ghost" id="btn-help2">Cara pasang</button>
+      </div>
+      <p class="idle-note" id="idle-note"></p>
+      <!-- Peringatan decoder. Bukan modal dan tidak menghalangi apa pun -
+           tombolnya tetap bisa ditekan - tapi tanpa ffmpeg tidak akan ada
+           gambar sama sekali, jadi ia harus tetap terbaca, bukan toast yang
+           lewat lima detik. Dimunculkan JS dari hasil probe Rust. -->
+      <p class="idle-note" id="idle-ffmpeg" hidden>
+        Decoder ffmpeg tidak ditemukan, jadi video tidak akan muncul.
+        <span data-os="macos">Pasang lewat <b>brew install ffmpeg</b>, atau letakkan berkas <b>ffmpeg</b> di sebelah aplikasi.</span>
+        <span data-os="windows linux">Pasang ffmpeg (mis. <b>winget install Gyan.FFmpeg</b>), atau letakkan <b>ffmpeg</b> di sebelah aplikasi.</span>
+        Menunjuk berkasnya langsung lewat variabel lingkungan <b>ZEROFUSS_FFMPEG</b> juga bisa.
+      </p>
+    </div>
+
+    <div class="toast" id="toast" hidden></div>
+  </main>
+
+  <!-- Strip pemicu: bar tersembunyi muncul saat kursor menyentuh tepi atas. -->
+  <div class="peek" id="peek" aria-hidden="true"></div>
+
+  <!-- ------------------------------------------------------------ onboarding -->
+  <!-- Modal langkah. Muncul memaksa diri sekali di jalan pertama; sesudahnya
+       hanya kalau diminta lewat "Cara pasang". Sengaja modal, bukan panel
+       samping: di jalan pertama ini SATU-SATUNYA jalan supaya video muncul,
+       jadi ia berhak menahan perhatian. -->
+  <div class="sheet" id="ob" hidden>
+    <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="ob-judul">
+      <div class="ob-head">
+        <span class="ob-hitung" id="ob-hitung">1 / 4</span>
+        <button class="btn btn-icon btn-ghost" id="ob-tutup" title="Tutup (Esc)">✕</button>
+      </div>
+
+      <div class="ob-gambar" id="ob-gambar">
+        <!-- Gambar dipasang JS supaya tidak ada empat <img> yang semuanya
+             dimuat sekaligus saat aplikasi mulai. -->
+      </div>
+
+      <div class="ob-teks">
+        <h2 id="ob-judul">Colok kabel</h2>
+        <p id="ob-isi">…</p>
+      </div>
+
+      <div class="ob-kaki">
+        <div class="ob-titik" id="ob-titik" aria-hidden="true"></div>
+        <!-- Muncul hanya di langkah terakhir: kalau sudah membaca semuanya dan
+             video masih tidak muncul, di situlah rujukan lengkap berguna.
+             Menampilkannya sejak langkah 1 hanya menawarkan jalan keluar dari
+             hal yang belum dicoba. -->
+        <button class="btn btn-sm btn-ghost" id="ob-panduan" hidden>Panduan lengkap</button>
+        <div class="ob-aksi">
+          <button class="btn btn-ghost" id="ob-mundur">Kembali</button>
+          <button class="btn" id="ob-maju" data-primary>Lanjut</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------------------ pengaturan -->
+  <aside class="panel" id="drawer" hidden>
+    <div class="panel-head">
+      <h2>Pengaturan</h2>
+      <button class="btn btn-icon btn-ghost" id="btn-close" title="Tutup">✕</button>
+    </div>
+
+    <section class="group">
+      <h3>Tentang</h3>
+      <div class="btn-row">
+        <button class="btn btn-sm btn-ghost" id="btn-license-doc">Lisensi (MIT)</button>
+        <button class="btn btn-sm btn-ghost" id="btn-notices">Komponen pihak ketiga</button>
+      </div>
+    </section>
+
+    <section class="group">
+      <h3>Gambar</h3>
+      <label class="switch">
+        <input type="checkbox" id="f-lens">
+        <span>Koreksi lensa</span>
+      </label>
+      <p class="note note-tight">
+        Lensa FPV melengkungkan garis lurus. Kekuatannya disetel manual karena
+        setiap air unit berbeda - naikkan sampai horizon terlihat lurus.
+      </p>
+      <label class="range">
+        <span>Kekuatan</span>
+        <input type="range" id="f-lens-str" min="0" max="100" step="1">
+        <output id="o-lens-str">0%</output>
+      </label>
+      <!-- Satu saklar, bukan pemilih tiga arah. Bawaannya SELALU ikut sumber:
+           itu satu-satunya pilihan yang tidak pernah salah, karena kotak tampil
+           dibuat sama dengan bingkai yang datang. Yang benar-benar dibutuhkan
+           cuma satu tindakan tambahan - mengisi layar 16:9 saat goggles
+           mengirim 4:3 - dan itu dilakukan dengan MEMOTONG atas-bawah, bukan
+           meregangkan. Terukur: cara lama memeras bentuk 33% (persegi 300x300
+           jadi 212x159); dengan potong ia tetap 212x213.
+           Saklarnya mati saat sumbernya bukan 4:3, karena di sana ia tidak
+           punya arti - dan saklar hidup yang tidak melakukan apa-apa itu
+           jebakan. -->
+      <label class="switch" id="f-wide-row">
+        <input type="checkbox" id="f-wide">
+        <span>Isi layar 16:9 dari sumber 4:3 (potong atas-bawah)</span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="f-clean">
+        <span>Mode bersih (sembunyikan bar)</span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="f-pin">
+        <span>Sematkan bar &amp; statistik</span>
+      </label>
+      <p class="note note-tight">
+        Di layar penuh dan mode bersih, bar disembunyikan supaya gambar utuh -
+        arahkan kursor ke <b>tepi atas</b> untuk memunculkannya kembali.
+        Sematkan kalau FPS dan bitrate ingin terus terlihat. <b>A</b> mengisi layar
+        16:9 saat sumbernya 4:3, <b>B</b> keluar mode bersih, <b>Esc</b> keluar
+        layar penuh.
+      </p>
+    </section>
+
+    <section class="group">
+      <h3>Adapter goggles</h3>
+      <div class="row row-btn">
+        <span>Status</span>
+        <span class="adapter" id="adapter-state">memeriksa…</span>
+      </div>
+      <dl class="ident" id="adapter-ident" hidden>
+        <div><dt>Nama</dt><dd id="a-name">—</dd></div>
+        <div><dt>Deskripsi</dt><dd id="a-desc">—</dd></div>
+        <div><dt>MAC</dt><dd id="a-mac">—</dd></div>
+        <div><dt>IPv4</dt><dd id="a-ip">—</dd></div>
+      </dl>
+      <p class="note note-tight" data-os="windows linux">
+        Goggles tidak melayani DHCP, jadi adapter RNDIS-nya perlu alamat IPv4
+        yang dipasang manual. <b>Setel adapter</b> mengerjakannya (butuh izin
+        admin); <b>Bersihkan</b> mengembalikannya ke otomatis.
+      </p>
+      <p class="note note-tight" data-os="macos">
+        Di macOS tidak ada adapter jaringan yang perlu disetel: jalur Goggles 3
+        / N3 di sini berjalan lewat USB langsung, jadi <b>Setel adapter</b> dan
+        <b>Bersihkan</b> tidak berlaku - dan karena itu tidak ditampilkan.
+        Colok kabel, tekan Sambungkan; lihat Panduan bagian 6.
+      </p>
+      <div class="btn-row" data-os="windows linux">
+        <button class="btn btn-sm" id="btn-setup2">Setel adapter</button>
+        <button class="btn btn-sm btn-ghost" id="btn-cleanup">Bersihkan</button>
+      </div>
+    </section>
+
+    <section class="group">
+      <h3>Rekaman</h3>
+      <p class="note">
+        Disimpan sebagai H.264 mentah apa adanya - nol re-encode, nol beban CPU.
+        Bungkus ke mp4 tanpa transcode:
+        <code>ffmpeg -i rekaman.h264 -c copy -copyinkf rekaman.mp4</code>
+        <span class="tiny">-copyinkf wajib: rekaman dimulai di tengah stream, jadi bingkai
+        pertamanya bukan keyframe. Tanpa flag itu ffmpeg membuang semua paket
+        dan mp4-nya kosong.</span>
+      </p>
+      <label class="row"><span>Folder</span><input id="f-recdir" spellcheck="false" placeholder="Videos/Zerofuss"></label>
+      <div class="row row-btn"><span></span><button class="btn btn-sm" id="btn-open-rec">Buka folder</button></div>
+    </section>
+
+    <section class="group">
+      <h3>Diagnostik</h3>
+      <dl class="diag">
+        <div><dt>Paket</dt><dd id="d-pkts">—</dd></div>
+        <div><dt>Hilang</dt><dd id="d-lost">—</dd></div>
+        <div><dt>Dibuang</dt><dd id="d-drop">—</dd></div>
+        <div><dt>Frame decode</dt><dd id="d-dec">—</dd></div>
+        <div><dt>Frame korup</dt><dd id="d-corrupt">—</dd></div>
+        <div><dt>Decoder disegarkan</dt><dd id="d-restarts">—</dd></div>
+      </dl>
+      <p class="note note-tight" id="d-note">
+        Stream goggles praktis tanpa keyframe - ia memperbaiki diri bertahap
+        (intra-refresh). Karena itu <b>Frame korup</b> ikut naik terus-menerus
+        walau tidak ada paket yang hilang: terukur sekitar <b>4% dari Frame
+        decode</b>, dan tetap 4% sepanjang penerbangan. Itu keadaan normal, bukan
+        kerusakan - selama <b>Hilang</b> tetap 0 dan gambarnya bersih, angka ini
+        tidak perlu ditindak.
+      </p>
+      <pre class="log" id="d-log">—</pre>
+    </section>
+  </aside>
+
+  <!-- ---------------------------------------------------------------- panduan -->
+  <aside class="panel panel-wide" id="guide" hidden>
+    <div class="panel-head">
+      <h2>Panduan</h2>
+      <button class="btn btn-icon btn-ghost" id="btn-guide-close" title="Tutup">✕</button>
+    </div>
+
+    <section class="group">
+      <h3>1 · Persiapan sekali saja</h3>
+      <p class="note">
+        <b>Untuk Goggles 3, N3, Goggles 2, dan Integra.</b> Punya
+        <b>FPV Goggles V1/V2</b>? Bagian 1-5 tidak berlaku untuk kamu - lompat
+        ke bagian 7, dan ke bagian 6 kalau kamu di Mac.
+      </p>
+      <p class="note" data-os="macos">
+        <b>Punya Goggles 3 atau N3 dan pakai Mac?</b> Langkah alamat IP statis
+        di bawah tidak berlaku untuk kamu - di Mac tidak ada adapter jaringan
+        yang muncul. Lompat ke bagian 6; bagian 2-5 tetap berguna.
+      </p>
+      <p class="note" data-os="windows linux">
+        Goggles tidak membagikan alamat IP, jadi adapter USB-nya harus diberi
+        alamat statis satu kali di Windows. Setelah itu pemakaian sehari-hari
+        cukup mencolok kabel dan membuka Zerofuss.
+      </p>
+      <div class="kv" data-os="windows linux">
+        <div><dt>Alamat IP</dt><dd>192.168.60.1</dd></div>
+        <div><dt>Subnet mask</dt><dd>255.255.255.0</dd></div>
+        <div><dt>Prefix (kalau diminta)</dt><dd>24</dd></div>
+        <div><dt>Gateway &amp; DNS</dt><dd>biarkan kosong</dd></div>
+      </div>
+      <div data-os="windows">
+        <p class="note note-tight">
+          <span class="os">Windows</span>
+          Cara cepat: buka <b>Pengaturan › Adapter goggles › Setel adapter</b>.
+          Zerofuss melakukannya sendiri lewat prompt admin.
+        </p>
+        <details>
+          <summary>Cara manual — Windows 11</summary>
+          <ol>
+            <li>Colok goggles lewat USB dan biarkan tersambung.</li>
+            <li>Buka <b>Settings › Network &amp; internet › Ethernet</b>.</li>
+            <li>Pastikan <b>Description</b> berbunyi <b>Remote NDIS based Internet Sharing Device</b>
+                dan MAC-nya cocok dengan yang tertera di panel Adapter goggles.</li>
+            <li>Di <b>IP assignment</b> tekan <b>Edit</b>, ganti Automatic (DHCP) → <b>Manual</b>,
+                nyalakan <b>IPv4</b> (IPv6 biarkan mati).</li>
+            <li>Isi IP <b>192.168.60.1</b> dan subnet <b>255.255.255.0</b> (atau prefix <b>24</b>),
+                gateway dan DNS dibiarkan kosong, lalu <b>Save</b>.</li>
+          </ol>
+        </details>
+        <details>
+          <summary>Cara manual — Windows 10</summary>
+          <ol>
+            <li>Colok goggles lewat USB dan biarkan tersambung.</li>
+            <li><b>Settings › Network &amp; Internet › Status › Change adapter options</b>.</li>
+            <li>Cari adapter yang keterangannya <b>Remote NDIS based Internet Sharing Device</b>.
+                Kalau ragu: biarkan jendela terbuka, cabut goggles, lihat adapter mana yang hilang.</li>
+            <li>Klik kanan adapter → <b>Properties</b> → dobel klik
+                <b>Internet Protocol Version 4 (TCP/IPv4)</b>.</li>
+            <li>Pilih <b>Use the following IP address</b>, isi <b>192.168.60.1</b> /
+                <b>255.255.255.0</b>, gateway kosong, DNS otomatis, lalu <b>OK</b>.</li>
+          </ol>
+        </details>
+        <details>
+          <summary>Mengembalikan ke otomatis</summary>
+          <p class="note note-tight">
+            Tekan <b>Bersihkan</b> di panel Adapter goggles, atau set IPv4 adapter
+            itu kembali ke <b>Automatic (DHCP)</b> lewat jalur manual di atas.
+            Berguna kalau adapter yang sama mau dipakai untuk hal lain.
+          </p>
+        </details>
+      </div>
+    </section>
+
+    <section class="group">
+      <h3>2 · Yang sering tertukar</h3>
+      <p class="note">
+        <b>LiveView Sharing</b> ada di <b>Shortcut Menu</b> (tekan 5D button ke
+        bawah, ke arahmu) dan mengirim tampilan goggles ke perangkat lain - itu
+        yang dipakai Zerofuss. <b>Transmission › Broadcasting</b> adalah hal
+        berbeda: menyiarkan tampilan ke <b>goggles lain</b> sebagai penonton, dan
+        tidak berpengaruh ke jalur kabel USB.
+      </p>
+      <p class="note note-tight">
+        Butuh sumber gambar juga: air unit hidup dan sudah ter-link. Untuk uji di
+        meja tanpa drone, nyalakan <b>Camera View Recording</b> di goggles.
+      </p>
+      <p class="note note-tight">
+        Gambar penuh terbentuk sekitar 4 detik setelah mulai. Itu satu putaran
+        intra-refresh: stream goggles praktis tanpa keyframe, jadi gambar
+        tersusun bertahap. Sekali saja, bukan gangguan.
+      </p>
+    </section>
+
+    <section class="group">
+      <h3>3 · Soal kabel</h3>
+      <ul>
+        <li>Paling baik: port <b>USB-C di PC</b> dengan kabel <b>USB-C ke USB-C</b> langsung ke goggles.</li>
+        <li>Kabel USB-A ke USB-C juga jalan, tapi goggles mengisi daya lebih lambat.</li>
+        <li>Pakai adapter OTG? Tempelkan di <b>sisi PC</b>, bukan di sisi goggles.</li>
+        <li>Kabel charge-only tidak akan pernah bekerja - harus kabel data.</li>
+      </ul>
+    </section>
+
+    <section class="group">
+      <h3>4 · Kalau video tidak muncul</h3>
+      <p class="note">
+        Negosiasi USB-C kadang memilih peran yang salah: goggles merasa jadi
+        host, sementara PC menganggap goggles cuma charger. Urut dari yang
+        paling sering berhasil:
+      </p>
+      <ol>
+        <li>Cabut kabel, colok lagi.</li>
+        <li><b>Balik posisi konektor USB-C</b>, lalu colok lagi.</li>
+        <li>Coba port USB-C lain di PC. Ulangi beberapa kali kalau perlu.</li>
+        <li>Lewat menu goggles: <b>Settings › About › OTG Wired Connection to Computer</b>,
+            tunggu sampai goggles menyatakan tersambung, keluar, kembali ke live view.</li>
+        <li>Pastikan <b>Share Liveview to Mobile Device via Wi-Fi</b> menyala, dan ada
+            sumber gambar: air unit ter-link, atau <b>Camera View Recording</b> ON.
+            Kalau kamu mematikan Camera View Recording untuk gambar tanpa OSD,
+            drone <b>harus</b> hidup dan ter-link - tanpa itu goggles tidak
+            mengirim apa pun.</li>
+        <li>Cek panel <b>Adapter goggles</b>: statusnya harus <b>terpasang</b>.</li>
+      </ol>
+      <p class="note note-tight">
+        Setelah mode OTG dinyalakan, kadang muncul label kecil di kanan bawah
+        tampilan goggles. Itu tidak mengganggu koneksi dan biasanya bisa
+        dimatikan dari <b>Status</b> di menu goggles - kalau koneksinya justru
+        putus, nyalakan lagi layar mode kabel itu.
+      </p>
+    </section>
+
+    <section class="group">
+      <h3>5 · Yang bisa diharapkan</h3>
+      <div class="kv">
+        <div><dt>Latensi jalur kabel</dt><dd>±150 ms</dd></div>
+        <div><dt>Tambahan dari Zerofuss</dt><dd>17–33 ms (terukur)</dd></div>
+        <div><dt>Bitrate khas</dt><dd>7–9 Mbps</dd></div>
+      </div>
+      <p class="note note-tight">
+        Jalur kabel lebih bersih daripada Wi-Fi: jauh lebih sedikit artefak dari
+        paket hilang, latensi lebih rendah, dan goggles ikut terisi daya.
+      </p>
+
+      <h4>Gambar tanpa OSD goggles</h4>
+      <p class="note note-tight">
+        Yang dikirim goggles adalah <b>tangkapan layarnya sendiri</b>, sudah
+        lengkap dengan OSD - telemetri, baterai, toast peringatan, bahkan
+        Shortcut Menu saat dibuka. Itu satu gambar utuh, jadi OSD-nya tidak bisa
+        dihapus Zerofuss: pikselnya sudah menyatu sebelum dikirim.
+      </p>
+      <p class="note note-tight">
+        Yang bisa: matikan di sumbernya lewat menu goggles -
+        <b>Settings › Camera › Advanced Camera Settings › Camera View
+        Recording › OFF</b>. Ini membuat gambar yang dibagikan lebih bersih dari
+        UI goggles.
+      </p>
+      <p class="note note-tight">
+        <b>Konsekuensinya harus kamu tahu:</b> dengan setelan itu OFF dan
+        <b>tanpa</b> air unit ter-link, goggles bisa berhenti mengirim gambar
+        sama sekali - layar Zerofuss tinggal hitam. Itu perilaku goggles, bukan
+        kerusakan. Untuk uji di meja tanpa drone, nyalakan lagi setelan itu
+        (dan OSD ikut kembali).
+      </p>
+      <p class="note note-tight">
+        Sesudah setelan itu dimatikan, goggles berpindah sendiri ke
+        <b>1440×1080</b> - 4:3 asli, tanpa bilah bawaan. Zerofuss mengikutinya
+        otomatis, jadi gambarnya tetap proporsional dengan bilah hitam di kiri
+        dan kanan. Kalau kamu lebih suka layar terisi penuh, nyalakan
+        <b>Pengaturan › Gambar › Isi layar 16:9</b> - atas dan bawah dipotong,
+        bentuknya tidak diregangkan.
+      </p>
+    </section>
+
+    <section class="group" id="guide-macos">
+      <h3>6 · macOS</h3>
+      <p class="note">
+        <b>Di Mac kedua keluarga goggles jalan, dan keduanya tanpa pemasangan
+        apa pun.</b> Tidak ada driver, tidak ada kext, tidak ada adapter
+        jaringan, tidak ada IP statis, dan tidak ada prompt admin.
+      </p>
+
+      <h4>Goggles 3 / N3 - lewat USB langsung</h4>
+      <p class="note note-tight">
+        Zerofuss bicara sendiri ke interface RNDIS goggles dari user space: ia
+        mengklaim interface USB-nya langsung, jadi tidak ada adapter jaringan
+        yang muncul di macOS dan tidak ada alamat yang perlu dipasang.
+      </p>
+      <ol>
+        <li>Colok goggles dengan kabel <b>USB-C data</b> - kabel charge-only tidak akan pernah bekerja.</li>
+        <li>Di goggles: <b>Settings › About › OTG Wired Connection to Computer</b>, nyalakan.</li>
+        <li>Nyalakan <b>LiveView Sharing</b> - 5D button ke bawah, lalu Shortcut Menu.</li>
+        <li>Buka Zerofuss dan tekan <b>Sambungkan</b>.</li>
+      </ol>
+      <p class="note note-tight">
+        <b>Kenapa justru di Mac ini mungkin:</b> macOS tidak punya driver RNDIS
+        bawaan, jadi tidak ada satu pun modul kernel yang memegang interface itu
+        - dan interface yang tidak dipegang siapa pun boleh diklaim aplikasi.
+        Di Windows dan Linux kernelnya justru memegangnya, karena itu di sana
+        jalurnya tetap adapter jaringan dengan alamat IP statis.
+      </p>
+
+      <h4>FPV Goggles V1/V2</h4>
+      <p class="note note-tight">
+        Sama mudahnya, dan sebabnya sama: interface videonya berkelas vendor
+        (0xFF) dan tidak ada modul kernel macOS yang mengklaimnya, jadi Zerofuss
+        mengambilnya langsung - colok goggles, buka Zerofuss, tekan
+        <b>Sambungkan</b>. Langkah lengkapnya di bagian 7; blok driver di sana
+        khusus Windows dan tidak ditampilkan di Mac.
+      </p>
+      <p class="note note-tight">
+        Decoder ikut dibungkus di dalam <code>.app</code>, jadi tidak ada yang
+        perlu dipasang. Kalau berkasnya hilang atau kamu menjalankan Zerofuss
+        di luar bundel, <code>brew install ffmpeg</code> menutup celahnya.
+      </p>
+    </section>
+
+    <section class="group" id="guide-bulk">
+      <h3>7 · FPV Goggles V1/V2</h3>
+      <p class="note">
+        Goggles generasi lama (dipakai bersama <b>DJI FPV</b>, <b>Vista</b>, atau
+        <b>Air Unit</b>) memakai jalur yang sama sekali berbeda: video keluar
+        lewat USB bulk, bukan lewat adapter jaringan. Zerofuss mengenalinya
+        sendiri - <b>tidak perlu setel IP, tidak perlu OTG Wired Connection,
+        tidak perlu LiveView Sharing</b>. Semua itu menu Goggles 3.
+      </p>
+      <p class="note note-tight">
+        <b>Yang tidak termasuk:</b> Goggles 2, Integra, N3, dan Goggles 3 tidak
+        memakai jalur ini - perintah pembukanya sudah diuji dan ditolak firmware
+        mereka. Goggles 3 dilayani bagian 1, dan di Mac bagian 6.
+      </p>
+
+      <div data-os="windows">
+        <h4>Persiapan sekali saja: driver WinUSB</h4>
+        <p class="note note-tight">
+          <span class="os">Windows</span>
+          Windows tidak punya driver untuk interface video goggles, jadi ia harus
+          ditunjuk manual. Sekali per komputer. Ini juga syarat di semua aplikasi
+          lain yang memakai jalur ini, termasuk yang berbasis browser.
+        </p>
+        <ol>
+          <li>Colok goggles ke PC dan nyalakan.</li>
+          <li>Unduh <a href="https://zadig.akeo.ie/" target="_blank" rel="noreferrer">Zadig</a>
+              dan jalankan (ia akan meminta izin admin).</li>
+          <li>Menu <b>Options › List All Devices</b> - wajib, kalau tidak
+              interface-nya tidak muncul.</li>
+          <li>Di daftar atas, pilih entri bernama <b>Bulk interface</b>
+              (<code>Interface 3</code>).</li>
+          <li>Pastikan driver tujuannya <b>WinUSB</b>, lalu tekan
+              <b>Install Driver</b> dan tunggu.</li>
+          <li>Cabut kabel, colok lagi, buka Zerofuss.</li>
+        </ol>
+        <p class="note note-tight">
+          <b>Jangan sentuh entri lain</b> di daftar Zadig - khususnya yang
+          bernama RNDIS atau Mass Storage. Mengganti drivernya bisa memutus
+          sambungan goggles ke DJI Assistant.
+        </p>
+      </div>
+
+      <div data-os="macos linux">
+        <h4>Driver: tidak ada yang perlu dipasang</h4>
+        <p class="note note-tight">
+          Interface video goggles berkelas vendor dan tidak diklaim modul kernel
+          apa pun di sini, jadi Zerofuss mengambilnya langsung. Tidak ada driver
+          untuk dipasang, dan tidak ada alat seperti Zadig yang perlu dicari -
+          kalau ada panduan yang menyuruhmu memasang sesuatu, itu panduan
+          Windows.
+        </p>
+        <p class="note note-tight">
+          Kalau Zerofuss bilang interface-nya tidak bisa diklaim, yang menahannya
+          program lain: <b>tutup DigiView atau tab browser</b> yang sedang
+          membuka goggles, lalu coba lagi. Satu interface hanya bisa dipegang
+          satu program.
+        </p>
+      </div>
+
+      <h4>Pemakaian</h4>
+      <ol>
+        <li>Colok goggles, buka Zerofuss.</li>
+        <li>Nyalakan drone / air unit dan tunggu sampai ter-link - tanpa sumber
+            gambar, goggles tidak mengirim apa pun.</li>
+        <li>Tekan <b>Sambungkan</b>.</li>
+      </ol>
+      <p class="note note-tight">
+        Kalau gambarnya tidak muncul padahal drone hidup: pengguna DigiView
+        melaporkan air unit perlu <b>Auto temp control</b> dimatikan (menu
+        goggles <b>Settings › Device</b>), dan mode <b>50 Mbps</b> paling
+        stabil. Kami tidak punya hardware ini untuk memastikannya.
+      </p>
+    </section>
+
+    <section class="group">
+      <h3>Sumber</h3>
+      <p class="note">
+        Langkah pemasangan adapter dan penanganan negosiasi USB-C di atas
+        disusun dari manual <b>SquirrelReceiver</b> oleh xNuclearSquirrel, yang
+        lebih dulu memetakan jalur ini:
+        <a href="https://github.com/xNuclearSquirrel/SquirrelReceiver/blob/main/manuals/usb-wired-setup-pro.md"
+           target="_blank" rel="noreferrer">USB Wired Setup</a> ·
+        <a href="https://github.com/xNuclearSquirrel/SquirrelReceiver/blob/main/manuals/usb-wired-first-time-adapter-setup-pro.md"
+           target="_blank" rel="noreferrer">First-Time Adapter Setup</a>.
+      </p>
+      <p class="note note-tight">
+        Protokol USB bulk FPV Goggles V1/V2 di bagian 7 dibaca dari implementasi
+        <b>fpvout</b> yang sudah terbukti jalan di hardware:
+        <a href="https://github.com/fpvout/live.fpvout.com" target="_blank" rel="noreferrer">live.fpvout.com</a> ·
+        <a href="https://github.com/fpv-wtf/voc-poc" target="_blank" rel="noreferrer">voc-poc</a> ·
+        <a href="https://github.com/fpvout/DigiView-Android" target="_blank" rel="noreferrer">DigiView-Android</a>.
+      </p>
+    </section>
+  </aside>
+
+  <script src="main.js" type="module"></script>
+</body>
+</html>

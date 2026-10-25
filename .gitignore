@@ -1,0 +1,27 @@
+# Build dan dependensi.
+node_modules/
+target/
+gen/
+dist/
+bin/
+obj/
+__pycache__/
+
+# ffmpeg macOS hasil unduhan `ambil-ffmpeg-mac.sh`. Biner ~80 MB dan bukan
+# karya kami: ia diambil ulang saat build, bukan disimpan di riwayat.
+bin-mac/
+
+# Artefak uji, rekaman, dan APK.
+*.apk
+*.pcapng
+*.pkts
+*.h264
+*.exe
+testdata/
+
+# Rahasia dan alat lokal.
+.keys/
+.env*
+.wrangler/
+.claude/
+.agents/

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Tambahan Info.plist untuk bundel macOS. Tauri menggabungkan berkas ini ke
+  Info.plist yang ia bangkitkan, jadi di sini HANYA yang tidak bisa dihasilkan
+  otomatis.
+
+  1. NSAllowsLocalNetworking
+
+     Video tidak lewat IPC Tauri - ia lewat satu respons HTTP chunked di
+     loopback (`http://127.0.0.1:<port>/frames`, lihat pipeline::serve_frames).
+     App Transport Security memblokir HTTP polos dari WKWebView, dan alamat IP
+     numerik TIDAK termasuk pengecualian otomatisnya. Tanpa kunci ini, jendela
+     di macOS akan tampil normal tapi gambarnya tidak pernah datang - kegagalan
+     yang tidak menyisakan pesan apa pun di UI.
+
+     Yang dibuka HANYA alamat lokal. NSAllowsArbitraryLoads sengaja TIDAK
+     dipakai.
+
+  2. NSLocalNetworkUsageDescription
+
+     macOS 15 meminta izin sebelum aplikasi menyentuh jaringan lokal. Jalur
+     Goggles 3 / N3 memang tidak jalan di macOS, tapi kalau seseorang memasang
+     sendiri alamat 192.168.60.1 di sebuah antarmuka, soket UDP-nya akan
+     memicu prompt itu. Teks ini yang dibaca pengguna di prompt tersebut;
+     tanpa dia yang tampil kalimat generik yang tidak menjelaskan apa pun.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Zerofuss memakai jaringan lokal untuk mengambil live view dari goggles DJI yang tercolok lewat kabel USB. Tidak ada data yang dikirim ke internet.</string>
+</dict>
+</plist>

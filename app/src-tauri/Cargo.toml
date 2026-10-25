@@ -1,0 +1,37 @@
+[package]
+name = "zerofuss"
+version = "0.1.0"
+description = "Live view goggles DJI di desktop lewat kabel USB"
+authors = ["fanrsd"]
+license = "MIT"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "zerofuss_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+parking_lot = "0.12"
+# Dipakai untuk stempel waktu nama berkas rekaman.
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+# Jalur USB bulk FPV Goggles V1/V2.
+#
+# nusb, BUKAN rusb/libusb, dan alasannya lisensi: pustaka C libusb adalah
+# LGPL-2.1 sementara crate binding-nya (libusb1-sys) mengaku MIT, jadi menautnya
+# statis ke biner memicu kewajiban relink LGPL pasal 6 - dan
+# generator notices kami ikut salah mencatatnya. nusb Apache-2.0/MIT dan Rust
+# murni: nol kompilasi C, nol DLL titipan, nol kewajiban LGPL.
+nusb = "0.2"
+

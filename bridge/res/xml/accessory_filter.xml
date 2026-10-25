@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Diambil dari res/S5h.xml milik DJI Fly: manufacturer "DJI".
+     Model sengaja tidak diisi supaya cocok dengan semua accessory DJI
+     (WM160 / com.dji.link / com.dji.logiclink). -->
+<resources>
+    <usb-accessory manufacturer="DJI" />
+</resources>
