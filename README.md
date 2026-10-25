@@ -1,3 +1,7 @@
+<div align="center">
+  <img src=".github/assets/banner.svg" alt="zerofuss — Live view for DJI goggles on your desktop over USB." width="100%">
+</div>
+
 # Zerofuss
 
 Live view goggles DJI di jendela desktop, lewat kabel USB. Windows dan macOS.
